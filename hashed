@@ -1,0 +1,67 @@
+#!/bin/zsh
+
+# memo
+# hashed path      : ~/.zsh/hashes.zsh -> hashed path
+# hashed -u path   : ~/.zsh/hashes.zsh -> rehashed path
+# hashed -h
+
+file=~/.zsh/hashes.zsh
+unhash=false
+newline="-n"
+
+opt=$(getopt -o unf:h -l unhash,newline,help -- "$@")
+
+eval set -- "$opt"
+
+while true; do
+  case $1 in
+    -u | --unhash )
+      unhash=true
+      shift
+      ;;
+    -n | --newline )
+      newline=""
+      shift
+      ;;
+    -f | --file )
+      file=$2
+      shift
+      shift
+      ;;
+    -- )
+      shift
+      break
+      ;;
+    * )
+      echo "error"
+      exit 1;
+  esac
+done
+
+do_hash() {
+  echo $newline ${(D)1}
+}
+
+do_unhash() {
+  echo $newline ${~1}
+}
+
+source $file
+
+if [ $unhash = true ]; then
+  cmd='do_unhash'
+else
+  cmd='do_hash'
+fi
+
+if [ -p /dev/stdin ]; then
+  while read p; do
+    $cmd $p
+  done
+else
+  for p in "$@"; do
+    $cmd $p
+  done
+fi
+
+# vim: ft=zsh
